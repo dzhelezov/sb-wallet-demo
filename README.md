@@ -31,7 +31,6 @@ to run the [typegen](https://github.com/Joystream/hydra/tree/master/packages/hyd
 Mappings is a separated TypeScript module created in the mappings folder. The handlers exported by the module should match the ones defined in `manifest.yml` in the mappings section. Once the necessary files are generated, build it with
 
 ```bash
-yarn workspace sample-mappings install
 yarn mappings:build
 ```
 
@@ -51,43 +50,29 @@ yarn query-node:start:dev
 
 ## 5. Locally hosted indexer
 
-The Hydra Indexer endpoint used by Hydra processor is defined as environment variable `INDEXER_ENDPOINT_URL` sourced from `.env`. There are publicly available Hydra indexers for Polkadot and Subsocial. For other chains, a self-hosted indexer should be used.
+The Hydra Indexer endpoint used by Hydra processor is defined as environment variable `INDEXER_ENDPOINT_URL` sourced from `.env`. There are publicly available Hydra indexers hosted by Subsquid:
 
-The simplest way to run an indexer locally is to run `docker-compose-indexer.yml` with `docker-compose`. The following environment variables must be provided:
+- [Kusama](https://kusama.indexer.gc.subsquid.io/graphql)
+- [Polkadot](https://kusama.indexer.gc.subsquid.io/graphql)
+- [Karura](https://karura.indexer.gc.subsquid.io/graphql)
+
+Contact subsquid.io if you want to see you chain indexed!
+
+If for some reason you want to run Hydra Indexer look no further than docker-compose-indexer.yml  The following environment variables must be provided:
 
 - Database connection settings: DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASS
 - Chain RPC endpoint: WS_PROVIDER_ENDPOINT_URI
-- If non-standard types are being used by the Substrate runtime, map type definitions in the json format as an external volume
+- If non-standard types are being used by the Substrate runtime, map type definitions in the json format as an external volume (as set for Karura in this example).
 
 Follow the links for more information about the [indexer](https://github.com/Joystream/hydra/tree/master/packages/hydra-indexer/README.md) service and [indexer-api-gateway](https://github.com/Joystream/hydra/tree/master/packages/hydra-indexer-gateway/README.md).
 
-## Running in Docker
-
-Docker files are located in `./docker`. First, build the builder image:
+Run 
 
 ```bash
-$ docker build . -f docker/Dockerfile.builder -t builder
+docker compose -f docker-container-indexer.yml up
 ```
 
-Images for the GraphQL query node and the processor depend on the `builder` image which is now available. 
-Build with
-
-```bash
-$ docker build . -f docker/Dockerfile.query-node -t query-node:latest
-$ docker build . -f docker/Dockerfile.processor -t processor:latest
+and set in `.env`
 ```
-
-In order to run the docker-compose stack, we need to create the schema and run the database migrations. 
-
-```bash
-$ docker-compose up -d db 
-$ yarn docker:db:migrate
-```
-
-The last command runs `yarn db:bootstrap` in the `builder` image. A similar setup strategy may be used for Kubernetes (with `builder` as a starter container).
-
-Now everything is ready:
-
-```bash
-$ docker-compose up
+INDEXER_ENDPOINT_URL=http://localhost:4000/graphql
 ```
