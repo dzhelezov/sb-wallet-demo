@@ -1,0 +1,1 @@
+export { balancesTransfer } from './mappings';
